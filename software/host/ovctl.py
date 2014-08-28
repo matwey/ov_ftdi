@@ -208,6 +208,10 @@ def sniff(dev, speed, format, out, timeout):
     dev.regs.SDRAM_SINK_GO.wr(1)
     dev.regs.SDRAM_HOST_READ_GO.wr(1)
 
+    # clear perfcounters
+    dev.regs.OVF_INSERT_CTL.wr(1)
+    dev.regs.OVF_INSERT_CTL.wr(0)
+
     assert speed in ["hs", "fs", "ls"]
 
     if check_ulpi_clk(dev):
@@ -244,8 +248,8 @@ def sniff(dev, speed, format, out, timeout):
     try:
         dev.regs.CSTREAM_CFG.wr(1)
         while 1:
-            # FIXME: this is sometimes incorrect since this is not an atomic read
-            rptr = dev.regs.SDRAM_HOST_READ_RPTR_STATUS.rd()
+            dev.regs.SDRAM_SINK_PTR_READ.wr(0)
+            rptr = dev.regs.SDRAM_SINK_RPTR.rd()
             wptr = dev.regs.SDRAM_SINK_WPTR.rd()
             wrap_count = dev.regs.SDRAM_SINK_WRAP_COUNT.rd()
 
@@ -264,7 +268,11 @@ def sniff(dev, speed, format, out, timeout):
 
             print("%d / %d (%3.2f %% utilization) %d kB" % (delta, ring_size, utilization, total / 1024), file = sys.stderr)
 
+            dev.regs.OVF_INSERT_CTL.wr(0)
+            print("%d overflow, %08x total" % (dev.regs.OVF_INSERT_NUM_OVF.rd(), dev.regs.OVF_INSERT_NUM_TOTAL.rd()), file = sys.stderr)
+
             if False:
+                dev.regs.SDRAM_SINK_DEBUG_CTL.wr(0)
                 print("rptr = %08x i_stb=%08x i_ack=%08x d_stb=%08x d_term=%08x s0=%08x s1=%08x s2=%08x | wptr = %08x i_stb=%08x i_ack=%08x d_stb=%08x d_term=%08x s0=%08x s1=%08x s2=%08x wrap=%x" % (
                     dev.regs.SDRAM_HOST_READ_RPTR_STATUS.rd(),
                     dev.regs.SDRAM_HOST_READ_DEBUG_I_STB.rd(),
