@@ -10,11 +10,10 @@ from ovhw.whacker.util import *
 MAX_PACKET_SIZE = 800
 class Producer(Module):
 
-    def __init__(self, wrport, depth, consume_watermark, ena, la_filters=[]):
+    def __init__(self, wrport, depth, consume_watermark, ena, status, la_filters=[]):
         self.ulpi_sink = Sink(ULPI_DATA_TAG)
 
         self.out_addr = Source(dmatpl(depth))
-
 
         # Produce side
         self.submodules.produce_write = Acc_inc(max=depth)
@@ -73,7 +72,7 @@ class Producer(Module):
         stuff_packet = Signal()
         self.comb += stuff_packet.eq(self.packet_first.v | self.packet_last.v)
 
-        self.comb += If(ena & ~en_last, 
+        self.comb += If(ena & ~en_last,
             self.packet_first.set(1)).Elif(clear_acc_flags,
             self.packet_first.set(0))
 
@@ -87,6 +86,10 @@ class Producer(Module):
             Mux(self.packet_first.v, HF0_FIRST, 0)
             )
 
+        self.comb += If(~ena & self.fsm.ongoing("IDLE"),
+                status.eq(0)
+            ).Else(
+                status.eq(1))
 
         # Combine outputs of filters
         la_resets = [f.reset.eq(1) for f in la_filters]

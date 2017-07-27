@@ -13,6 +13,7 @@ from ovhw.ov_types import D_LAST, ULPI_DATA_D
 class Whacker(Module, AutoCSR):
     def __init__(self, depth):
         self._cfg = CSRStorage(1)
+        self._status = CSRStatus(1)
 
         debug_signals = 1
 
@@ -25,7 +26,7 @@ class Whacker(Module, AutoCSR):
         self.specials += rdport
 
         self.submodules.consumer = Consumer(rdport, depth)
-        self.submodules.producer = Producer(wrport, depth, self.consumer.pos, self._cfg.storage[0])
+        self.submodules.producer = Producer(wrport, depth, self.consumer.pos, self._cfg.storage[0], self._status.status[0])
         
 
         self.sink = self.producer.ulpi_sink
