@@ -1,4 +1,5 @@
 from migen.fhdl.std import *
+from migen.fhdl.decorators import InsertReset
 from migen.genlib.fsm import FSM, NextState
 from migen.genlib.fifo import SyncFIFO
 from migen.bank import description, csrgen
@@ -16,7 +17,7 @@ class SDRAM_Sink(Module, description.AutoCSR):
 
         self.sink = Sink([('d', 8), ('last', 1)])
 
-        self.submodules.sdram_fifo = SyncFIFO(width, max_burst_length)
+        self.submodules.sdram_fifo = InsertReset(SyncFIFO(width, max_burst_length))
 
         self.submodules.fifo_write_fsm = FSM()
 
@@ -137,6 +138,8 @@ class SDRAM_Sink(Module, description.AutoCSR):
 
         # wrap around counter
         self.comb += If(wrap & hostif.d_stb &~ hostif.d_term, self._wrap_count.inc())
+
+        self.sync += self.sdram_fifo.reset.eq(go &~ gor)
 
         # update wptr
         self.sync += If(go &~ gor,
