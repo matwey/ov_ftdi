@@ -15,7 +15,7 @@ Getting Started
 Once you have [obtained hardware](#obtaining-hardware), you can build the software and set up udev rules as follows:
 
 ```
-git clone https://github.com/openvizsla/ov_ftdi
+git clone https://github.com/OpenVizslaTNG/ov_ftdi.git
 cd ov_ftdi
 sudo cp software/host/52-openvizsla.rules /etc/udev/rules.d/
 make -C software/host
