@@ -566,6 +566,7 @@ def main():
     ap.add_argument("-l", "--load", action="store_true")
     ap.add_argument("--verbose", "-v", action="store_true")
     ap.add_argument("--config-only", "-C", action="store_true")
+    ap.add_argument("--force-load-bitstream", "-f", action="store_true")
 
     # Bind commands
     subparsers = ap.add_subparsers(title='subcommands',
@@ -589,7 +590,7 @@ def main():
         print("USB: Error opening device (1)\n")
         print(err)
 
-    if not dev.isLoaded():
+    if args.force_load_bitstream or not dev.isLoaded():
         print("FPGA not loaded, forcing reload")
         dev.close()
 
