@@ -97,7 +97,11 @@ FTDIDevice_Open(FTDIDevice *dev)
     return err;
   }
 
-  libusb_set_option(dev->libusb, LIBUSB_OPTION_LOG_LEVEL, 2);
+#if LIBUSB_API_VERSION >= 0x01000106
+	libusb_set_option(dev->libusb, LIBUSB_OPTION_LOG_LEVEL, 2);
+#else
+	libusb_set_debug(dev->libusb, 2);
+#endif
 
   dev->handle = libusb_open_device_with_vid_pid(dev->libusb,
 						OV_VENDOR,
