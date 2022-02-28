@@ -29,10 +29,24 @@ To capture USB traffic, you need to know the speed beforehand; it is specified a
 ./software/host/ovctl.py sniff <speed>
 ```
 
+To build a portable package using PyInstaller, first make sure that PyInstaller is installed into the current environment, then use the following:
+
+```sh
+cd ov_ftdi/software/host
+make # or nmake on Windows
+bash package.sh # or package.ps1 or package.bat on Windows.
+```
+
+The package will then be generated under `dist/ovctl`.
+
+Note that due to PyInstaller limitation, the target machine must be running the same OS on the same architecture as the host machine.
+
+The portable executable targeting Linux will ship with the udev rule file under `udev/` directory. Install it first to `/etc/udev/rules.d/` before running the package on another Linux machine.
+
 Project Status
 ==============
 
-(as of October 2019):
+(as of Feburary 2022):
 
 The hardware design and the FPGA *gateware* are considered stable and reliable,
 and have not been touched since late 2014.
@@ -44,9 +58,9 @@ USB packets in near real-time. Alternatively the host software can save captures
 
 There is basic integration with Wireshark using the extcap interface. The ovextcap available at https://github.com/matwey/libopenvizsla is known to work on Windows and Linux.
 
-There is no code to aggregate packets into transfers. Future Wireshark versions will reassemble packets into transfers and pass the data to upper layer dissectors (HID, Audio, Mass Storage, CCID, DFU, etc.). The Wireshark dissector progress is tracked at https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=15908
+Since Wireshark 3.6.0, USBLL packet reassembly is supported. Wireshark will now reassemble packets into transfers and pass the data to upper layer dissectors (HID, Audio, Mass Storage, CCID, DFU, etc.). Use the filter expression `!(frame.protocols == "usbll")` to hide low level packets.
 
-There's **no integration with other tools** like [sigrok](https://sigrok.org/) or the [virtual-usb-analyzer](http://vusb-analyzer.sourceforge.net/). Integration with sigrok would be nice to show the packet level of USB.
+There's **no integration with other tools** like [sigrok](https://sigrok.org/) or the [virtual-usb-analyzer](http://vusb-analyzer.sourceforge.net/) mainly due to feature overlapping with existing tools and/or lack of developer interests.
 
 At least partly due to the lack of availability of boards, there hasn't been any
 progress over the years, particularly not with the original project founder bushing

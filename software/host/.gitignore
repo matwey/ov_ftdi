@@ -7,3 +7,7 @@ libov.dylib
 libov.dll
 libov.exp
 libov.lib
+build/**
+dist/**
+__pycache__/**
+ovctl.spec
