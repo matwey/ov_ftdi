@@ -166,7 +166,7 @@ class SDRAM_Host_Read(Module, AutoCSR):
 
         self.host_write_fsm.act("IDLE",
             burst_rem_next.eq(sdram_fifo.level),
-            burst_timer.wait.eq(burst_rem == sdram_fifo.level),
+            burst_timer.wait.eq(go & burst_rem == sdram_fifo.level),
             self.source.payload.d.eq(0xD0),
             self.source.stb.eq(sdram_fifo.readable & (~sdram_fifo.writable | burst_timer.done)),
             If(self.source.ack & self.source.stb,
