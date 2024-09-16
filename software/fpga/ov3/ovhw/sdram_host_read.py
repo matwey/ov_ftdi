@@ -2,6 +2,7 @@ from migen import *
 from migen.genlib.fsm import FSM, NextState
 from migen.genlib.fifo import SyncFIFO
 from migen.genlib.misc import WaitTimer
+from migen.fhdl.decorators import ResetInserter
 from misoc.interconnect.csr import AutoCSR, CSRStorage, CSRStatus
 from misoc.interconnect.stream import Endpoint
 
@@ -81,7 +82,7 @@ class SDRAM_Host_Read(Module, AutoCSR):
 
         self.submodules.sdram_read_fsm = FSM()
 
-        sdram_fifo = SyncFIFO(width, host_burst_length)
+        sdram_fifo = ResetInserter()(SyncFIFO)(width, host_burst_length)
         self.submodules += sdram_fifo
 
         # we always read (never write)
@@ -138,6 +139,8 @@ class SDRAM_Host_Read(Module, AutoCSR):
 
         rptr_next = Signal(awidth)
         self.comb += If(wrap, rptr_next.eq(self._ring_base.storage)).Else(rptr_next.eq(self.rptr + 1))
+
+        self.sync += sdram_fifo.reset.eq(go &~ gor)
 
         self.sync += \
             If(go &~ gor, 
